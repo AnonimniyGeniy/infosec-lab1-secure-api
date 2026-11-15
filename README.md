@@ -53,7 +53,7 @@ pip-audit -r requirements.txt -f json -o artifacts/pip-audit.json
 bash scripts/snyk_scan.sh
 ```
 
-Тесты проверяют вход, создание и чтение заметок, изоляцию пользователей, хранение хеша, SQLi, XSS, отказ без токена, подделанные/просроченные/неполные JWT, недопустимый JSON, лимит размера тела и ограничение попыток входа.
+Текущие 12 тестов проверяют вход, создание и чтение заметок, изоляцию пользователей, хранение хеша, отказ без токена, подделанные/просроченные/неполные JWT, недопустимый JSON, лимит размера тела и ограничение попыток входа.
 
 В `.github/workflows/ci.yml` проверки запускаются на push, pull_request и вручную. Bandit выполняет SAST исходного кода. Основной SCA по заданию — Snyk Open Source; pip-audit сохранен как дополнительная проверка зависимостей. Любая находка этих инструментов или ошибка теста завершает соответствующий шаг с ошибкой; JSON-отчеты и JUnit сохраняются как Actions artifact `security-reports` даже при ошибках.
 
@@ -63,16 +63,18 @@ bash scripts/snyk_scan.sh
 
 В CI добавлен настоящий `snyk test` для установленного Python-проекта и `requirements.txt` (CLI 1.1308.4). Запуск использует только repository secret `SNYK_TOKEN`; значение не хранится в коде и не печатается. При отсутствии секрета, ошибке установки/сканера или найденных уязвимостях шаг завершается с ошибкой. Пропуск Snyk не считается успешной проверкой. JSON-результат сохраняется как `artifacts/snyk.json`, а при отсутствии токена — `artifacts/snyk-status.json` с `scanCompleted:false`.
 
-До добавления пользователем секрета и завершения нового запуска результат Snyk отсутствует. Предыдущие успешные запуски ниже относятся к конфигурации Bandit + pip-audit.
+Snyk Open Source успешно проверил 9 зависимостей: известных уязвимых путей не найдено. Проверка выполнена в запуске № 3, попытка 2; обязательный шаг Snyk, Bandit, дополнительный pip-audit, 12 тестов и шесть curl-проверок завершились успешно.
 
 ## Фактическая проверка curl
 
 Я выполнил шесть HTTP-запросов настоящим curl: неправильный пароль → 401; успешный вход → 200; GET без JWT → 401; GET с JWT → 200; создание заметки → 201; чтение созданной заметки → 200. [Обезличенный raw HTTP-протокол](evidence/curl-http-redacted.txt) содержит запросы и ответы. Учебный пароль и JWT удалены перед сохранением. Скрипт повторения: `python curl_evidence.py` в активированном окружении.
 
-## Предыдущие результаты GitHub Actions без Snyk
+## Результаты GitHub Actions
 
-Проверки в [запуске № 1](https://github.com/AnonimniyGeniy/infosec-lab1-secure-api/actions/runs/43739233482) завершились успешно: 13 тестов, SAST Bandit и SCA pip-audit. Полные JSON-отчеты доступны в артефакте security-reports.
+[Запуск № 3, попытка 2](https://github.com/AnonimniyGeniy/infosec-lab1-secure-api/actions/runs/43745387926) завершился успешно. Snyk Open Source проверил 9 зависимостей без известных уязвимых путей. Полные JSON-отчеты и обезличенный curl-протокол сохранены в артефакте security-reports.
 
-![Успешный запуск GitHub Actions](evidence/actions-success.png)
+![Успешный запуск с обязательным Snyk](evidence/actions-success-current.png)
 
-![Результаты тестов, Bandit и pip-audit](evidence/actions-sca.png)
+![Фактический результат Snyk Open Source](evidence/actions-snyk-current.png)
+
+![Двенадцать тестов, curl и шаг Bandit](evidence/actions-tests-current.png)
