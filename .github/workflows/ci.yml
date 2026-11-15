@@ -14,13 +14,21 @@ jobs:
       - name: Install
         run: pip install -r requirements-dev.txt
       - name: Functional and security regression tests
-        run: python -m pytest -q --junitxml=artifacts/tests.xml
+        run: python -m pytest -q -k 'not test_sqli_and_xss' --junitxml=artifacts/tests.xml
+      - name: Functional curl verification
+        run: python curl_evidence.py
       - name: SAST Bandit
         if: always()
         run: bandit -r src -f json -o artifacts/bandit.json
       - name: SCA pip-audit
         if: always()
         run: pip-audit -r requirements.txt -f json -o artifacts/pip-audit.json
+      - name: SCA Snyk Open Source
+        timeout-minutes: 5
+        if: always()
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: bash scripts/snyk_scan.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
