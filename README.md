@@ -55,3 +55,11 @@ pip-audit -r requirements.txt -f json -o artifacts/pip-audit.json
 Тесты проверяют вход, создание и чтение заметок, изоляцию пользователей, хранение хеша, SQLi, XSS, отказ без токена, подделанные/просроченные/неполные JWT, недопустимый JSON, лимит размера тела и ограничение попыток входа.
 
 В `.github/workflows/ci.yml` проверки запускаются на push, pull_request и вручную. Bandit выполняет SAST исходного кода, pip-audit — SCA зависимостей. Любая находка этих инструментов или ошибка теста завершает соответствующий шаг с ошибкой; JSON-отчеты и JUnit сохраняются как Actions artifact `security-reports` даже при ошибках.
+
+## Результаты GitHub Actions
+
+Проверки в [запуске № 1](https://github.com/AnonimniyGeniy/infosec-lab1-secure-api/actions/runs/43739233482) завершились успешно: 13 тестов, SAST Bandit и SCA pip-audit. Полные JSON-отчеты доступны в артефакте security-reports.
+
+![Успешный запуск GitHub Actions](evidence/actions-success.png)
+
+![Результаты тестов, Bandit и pip-audit](evidence/actions-sca.png)
