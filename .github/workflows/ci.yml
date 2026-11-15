@@ -1,0 +1,28 @@
+name: API security checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  test-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install
+        run: pip install -r requirements-dev.txt
+      - name: Functional and security regression tests
+        run: python -m pytest -q --junitxml=artifacts/tests.xml
+      - name: SAST Bandit
+        if: always()
+        run: bandit -r src -f json -o artifacts/bandit.json
+      - name: SCA pip-audit
+        if: always()
+        run: pip-audit -r requirements.txt -f json -o artifacts/pip-audit.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: artifacts/
